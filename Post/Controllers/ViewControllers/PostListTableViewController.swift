@@ -15,11 +15,20 @@ class PostListTableViewController: UITableViewController {
         super.viewDidLoad()
         tableView.estimatedRowHeight = 80
         tableView.rowHeight = UITableViewAutomaticDimension
+        
+        reloadTableView()
     }
     
-    // MARK: - Outlets
-    
     // MARK: - Actions
+    @IBAction func refreshControlActivated(_ sender: UIRefreshControl) {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        postController.fetchPosts {
+            self.reloadTableView()
+            DispatchQueue.main.async {
+                sender.endRefreshing()
+            }
+        }
+    }
     
     // MARK: - Properties
     let postController = PostController()
@@ -30,7 +39,6 @@ class PostListTableViewController: UITableViewController {
             self.tableView.reloadData()
             UIApplication.shared.isNetworkActivityIndicatorVisible = false
         }
-        
     }
     
     // MARK: - Table View Data Source
@@ -41,20 +49,13 @@ class PostListTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "postCell", for: indexPath)
         let post = postController.posts[indexPath.row]
-
+        let date = Date(timeIntervalSince1970: post.timestamp)
+        
         cell.textLabel?.text = post.text
-        cell.detailTextLabel?.text = "\(post.username) \n \(post.timestamp) \n\(indexPath.row)"
+        cell.detailTextLabel?.text = "User: \(post.username) \n \(date.stringValue())"
 
         return cell
     }
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
 
     /*
     // Override to support editing the table view.

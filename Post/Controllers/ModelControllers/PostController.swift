@@ -11,16 +11,16 @@ import Foundation
 class PostController {
     
     // MARK: - Properties
-    static let baseURL = URL(string: "https://dm-post.firebaseio.com/posts.json")
+    static let baseURL = URL(string: "http://devmtn-posts.firebaseio.com/posts.json")!
     var posts: [Post] = []
     
     // MARK: - Methods
     func fetchPosts(completion: @escaping() -> Void) {
-        guard let baseURL = PostController.baseURL else { return }
-        let getterEndpoint = baseURL.appendingPathComponent("json")
+        let baseURL = PostController.baseURL
+//        let getterEndpoint = baseURL.appendingPathComponent("json")
         
-        let request = URLRequest(url: getterEndpoint)
-        let dataTask = URLSession.shared.dataTask(with: request) { (data, _, error) in
+//        let request = URLRequest(url: getterEndpoint)
+        let dataTask = URLSession.shared.dataTask(with: baseURL) { (data, _, error) in
             if let error = error {
                 print("Error occurred: \(error.localizedDescription)")
                 return
