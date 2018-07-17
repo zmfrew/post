@@ -16,7 +16,11 @@ class PostListTableViewController: UITableViewController {
         tableView.estimatedRowHeight = 80
         tableView.rowHeight = UITableViewAutomaticDimension
         
-        reloadTableView()
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        
+        postController.fetchPosts {
+            self.reloadTableView()
+        }
     }
     
     // MARK: - Actions
@@ -30,6 +34,10 @@ class PostListTableViewController: UITableViewController {
         }
     }
     
+    @IBAction func addButtonTapped(_ sender: Any) {
+        presentNewPostAlert()
+    }
+    
     // MARK: - Properties
     let postController = PostController()
     
@@ -39,6 +47,52 @@ class PostListTableViewController: UITableViewController {
             self.tableView.reloadData()
             UIApplication.shared.isNetworkActivityIndicatorVisible = false
         }
+    }
+    
+    func presentNewPostAlert() {
+        let alertController = UIAlertController(title: "New Post", message: nil, preferredStyle: .alert)
+        
+        var usernameTextField: UITextField?
+        var messageTextField: UITextField?
+        
+        alertController.addTextField { (usernameField) in
+            usernameField.placeholder = "Username"
+            usernameTextField = usernameField
+        }
+        
+        alertController.addTextField { (messageField) in
+            messageField.placeholder = "What's on your mind?"
+            messageTextField = messageField
+        }
+        
+        let addAction = UIAlertAction(title: "Add", style: .default) { (_) in
+            guard let username = usernameTextField?.text, !username.isEmpty, username != " ", let text = messageTextField?.text, !text.isEmpty, text != " " else {
+                self.presentErrorAlert()
+                return
+            }
+            
+            self.postController.addNewPostWith(username: username, text: text, completion: {
+                self.reloadTableView()
+            })
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alertController.addAction(addAction)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true, completion: nil)
+        
+    }
+    
+    func presentErrorAlert() {
+        let alertController = UIAlertController(title: "Oops!", message: "Check to make sure you entered all info.", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     // MARK: - Table View Data Source
@@ -56,42 +110,13 @@ class PostListTableViewController: UITableViewController {
 
         return cell
     }
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row >= postController.posts.count - 1 {
+            postController.fetchPosts(reset: false, completion: {
+                self.reloadTableView()
+            })
+        }
     }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

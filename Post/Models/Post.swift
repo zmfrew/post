@@ -15,10 +15,17 @@ struct Post: Codable {
     let text: String
     let timestamp: TimeInterval
     
-    init(username: String, text: String, timestamp: TimeInterval) {
+    var queryTimeStamp: TimeInterval {
+        return timestamp - 0.00001
+    }
+    
+    // MARK: - Initializers
+    init(username: String, text: String, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.username = username
         self.text = text
-        self.timestamp = Date().timeIntervalSince1970
+        self.timestamp = timestamp
     }
+    
+    
     
 }
